@@ -15,8 +15,8 @@ app.use("/users/detail",require("./routes/userDetails/userfriend")); // user fri
 
 
 
-
-
+ 
+    
 app.listen(port,() => {
     console.log(`inotebook backend listening on port:${port}`)
 })
