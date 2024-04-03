@@ -49,7 +49,7 @@ router.put(
 				if (updated.modifiedCount > 0) {
 					res.status(200).json({ msg: "updated successfully✅" });
 				} else {
-					res.status(400).json({ msg: "No updates made" });
+					res.status(200).json({ msg: "No updates made" });
 				}
 			} else {
 				res.status(400).json({ msg: "No fields to update" });

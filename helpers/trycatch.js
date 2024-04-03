@@ -1,4 +1,5 @@
 async function tryCatch(code,res) {
+    // res argument is important to be there 
     try {
         await code()
     } catch (error) {

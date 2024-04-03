@@ -56,7 +56,7 @@ router.post("/login", [
             const loginSession = getLoginSession()
             const authToken = getAuthToken({ user: { id: isEmailExist._id } })
             const updateLoginSession = await UserDetail.updateOne({ _id: isEmailExist._id }, { loginSession })
-            return res.status(200).json({ authToken, loginSession, shouldProceed: true })
+            return res.status(200).json({ authToken, loginSession, shouldProceed: true,email })
         }
     }, res)
 });
@@ -88,7 +88,7 @@ router.post("/logout", authorize, async (req, res) => {
 
 router.post("/resetpassword", authorize, [
     body("newPassword", "Password must be at least 5 characters").isLength({ min: 5, })
-], async (req, res) => { // this api insures that the user is logged in with only one device
+], async (req, res) => { // this api reset the password
     tryCatch(async () => {
         const Validation_errors = validationResult(req);
         if (!Validation_errors.isEmpty()) {
@@ -96,7 +96,7 @@ router.post("/resetpassword", authorize, [
         }
         const { shouldProceed,newPassword } = req.body;
         if(!shouldProceed){return res.status(400).json({ msg: 'Email or password is wrong' })}
-        if(shouldProceed){
+        if(shouldProceed){ 
             const { user } = req.user;
             const userData = await UserDetail.findById(user.id).select(['password','-_id']);
             const passCompare = await bcrypt.compare(userData.password, newPassword)
@@ -107,5 +107,4 @@ router.post("/resetpassword", authorize, [
         return res.status(200).json({msg:`your new password is ${newPassword}`})
     }, res)
 });
-
 module.exports = router;

@@ -17,6 +17,7 @@ async function mailSender(email, text, body) {
         to: email, // list of receivers
         text: text, // plain text body
         html: body, // html body
+        subject:'This is the otp from scribble chat'
     });
 };
 module.exports =  mailSender;

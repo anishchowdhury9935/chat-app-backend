@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 const mailSender = require("../utils/mailsender.js");
-const secret = process.env.REACT_APP_SECRET;
-const jwt = require("jsonwebtoken");
+const getJwtVerifiedData = require('../helpers/getjwtverifieddata.js');
 const OTPSchema = new mongoose.Schema({
 	email: {
 		type: String,
@@ -58,7 +57,7 @@ async function sendVerificationEmail(email, otp) {
 OTPSchema.pre("save", async function (next) {
 	// Only send an email when a new document is created
 	if (this.isNew) {
-		const data = jwt.verify(this.otp, secret);
+		const data = getJwtVerifiedData(this.otp)
 		const { OtpDATA } = data;
 		await sendVerificationEmail(this.email, OtpDATA);
 	}
