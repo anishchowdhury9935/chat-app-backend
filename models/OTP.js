@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
 const mailSender = require("../utils/mailsender.js");
-const getJwtVerifiedData = require('../helpers/getjwtverifieddata.js');
+const getJwtVerifiedData = require('../helpers/getJwtVerifiedData.js');
 const OTPSchema = new mongoose.Schema({
 	email: {
 		type: String,
