@@ -19,20 +19,19 @@ router.post("/create_user", [
     }), body("password", "Password must be at least 5 characters").isLength({ min: 5, })
 ], async (req, res) => {
     tryCatch(async () => {
+        const { name, email, password } = req.body;
         const Validation_errors = validationResult(req);
         if (!Validation_errors.isEmpty()) {
-            return res.status(400).json({ error: Validation_errors.errors[0].msg });
+            return res.status(200).json({ error: Validation_errors.errors[0].msg });
         }
-        const { name, email, password } = req.body
         const isEmailExist = await UserDetail.findOne({ email })
-        if (isEmailExist) { return res.status(200).json({ msg: "This email already in use." }) };
-
+        if (isEmailExist) { return res.status(200).json({ error: "This email already linked with an account" }) };
         const secPassword = await getHashData(password)
         const loginSession = getLoginSession()
         const signInUser = await UserDetail.create({ name, email, password: secPassword, loginSession }).then(async () => {
             const userId = await UserDetail.findOne({ email }).select(["_id"])
             const authToken = getAuthToken({ user: { id: userId } })
-            return res.status(200).json({ authToken, loginSession });
+            return res.status(200).json({ authToken, loginSession,msg:"your account has been created ✅" });
         })
     }, res)
 });
@@ -43,14 +42,14 @@ router.post("/login", [
     tryCatch(async () => {
         const Validation_errors = validationResult(req);
         if (!Validation_errors.isEmpty()) {
-            return res.status(400).json({ error: Validation_errors.errors[0].msg });
+            return res.status(200).json({ error: Validation_errors.errors[0].msg });
         }
         const { email, password } = req.body
         const isEmailExist = await UserDetail.findOne({ email }).select(['password', "_id"])
-        if (!isEmailExist) { return res.status(400).json({ msg: 'Email or password is wrong', shouldProceed: false }) }
+        if (!isEmailExist) { return res.status(200).json({ msg: 'Email or password is wrong', shouldProceed: false }) }
         const isPasswordCorrect = await bcrypt.compare(password, isEmailExist.password)
         if (!isPasswordCorrect) {
-            return res.status(400).json({ msg: 'Email or password is wrong', shouldProceed: false })
+            return res.status(200).json({ msg: 'Email or password is wrong', shouldProceed: false })
         }
         if (isPasswordCorrect) {
             const loginSession = getLoginSession()
@@ -64,13 +63,13 @@ router.get("/shouldlogin", authorize, async (req, res) => { // this api insures 
     tryCatch(async () => {
         const { loginSession } = req.body;
         const isLogin = jwt.verify(loginSession, secret, async (error) => {
-            if (error) { return res.status(400).json({ mag: "LoginSession is invalid⚠️", shouldStayLogin: false }); }
+            if (error) { return res.status(200).json({ mag: "LoginSession is invalid⚠️", shouldStayLogin: false }); }
             if (!error) {
                 const { user } = req.user;
                 const userData = await UserDetail.findById(user.id).select(['loginSession', '-_id'])
                 const shouldUserLogin = userData.loginSession === loginSession;
                 if (!shouldUserLogin) {
-                    return res.status(400).json({ shouldStayLogin: false });
+                    return res.status(200).json({ shouldStayLogin: false });
                 }
                 return res.status(200).json({ shouldStayLogin: true });
             }
@@ -92,10 +91,10 @@ router.post("/resetpassword", authorize, [
     tryCatch(async () => {
         const Validation_errors = validationResult(req);
         if (!Validation_errors.isEmpty()) {
-            return res.status(400).json({ error: Validation_errors.errors[0].msg });
+            return res.status(200).json({ error: Validation_errors.errors[0].msg });
         }
         const { shouldProceed,newPassword } = req.body;
-        if(!shouldProceed){return res.status(400).json({ msg: 'Email or password is wrong' })}
+        if(!shouldProceed){return res.status(200).json({ msg: 'Email or password is wrong' })}
         if(shouldProceed){ 
             const { user } = req.user;
             const userData = await UserDetail.findById(user.id).select(['password','-_id']);

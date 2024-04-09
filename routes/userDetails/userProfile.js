@@ -33,7 +33,7 @@ router.put(
 		tryCatch(async()=>{
             const Validation_errors = validationResult(req);
 			if (!Validation_errors.isEmpty()) {
-				return res.status(400).json({ error: Validation_errors.errors[0].msg });
+				return res.status(200).json({ error: Validation_errors.errors[0].msg });
 			}
 			const { name, email } = req.body;
 			const user = await req.user;
@@ -52,7 +52,7 @@ router.put(
 					res.status(200).json({ msg: "No updates made" });
 				}
 			} else {
-				res.status(400).json({ msg: "No fields to update" });
+				res.status(200).json({ msg: "No fields to update" });
 			}
         });
 	},

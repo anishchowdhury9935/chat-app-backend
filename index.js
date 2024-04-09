@@ -8,7 +8,7 @@ const connectSocketServer = require('./socketFiles/connectSocketServer');
 const chatData = require('./routes/chat/chatData');
 const cors = require('cors'); 
 
-app.use(cors()); 
+app.use(cors({origin:"*"})); 
 app.use(express.json())  
 connectSocketServer(server); // socket server
 connectToMongo() // connect to MongoDB

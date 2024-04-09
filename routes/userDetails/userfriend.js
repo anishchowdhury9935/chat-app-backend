@@ -23,7 +23,7 @@ router.get("/getuserfriend", authorize, async (req, res) => {
     tryCatch(async()=>{
         const { user } = req.user //friendEmail & userEmail will be a string 
 		const msg  = await getUserFriendFunction(user.id);
-		res.status(200).json({msg})
+		res.status(200).json(msg)
     })
 });
 
