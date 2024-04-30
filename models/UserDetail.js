@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     },
     userImage: {
         type: String,
-        default: null
+        default: "https://firebasestorage.googleapis.com/v0/b/chat-app-b2168.appspot.com/o/userProfile%2FdefualtImage?alt=media&token=67059014-fdb9-45a3-b255-a9b259c2f381"
     },
     password: {
         type: String,

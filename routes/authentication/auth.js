@@ -46,20 +46,20 @@ router.post("/login", [
         }
         const { email, password } = req.body
         const isEmailExist = await UserDetail.findOne({ email }).select(['password', "_id"])
-        if (!isEmailExist) { return res.status(200).json({ msg: 'Email or password is wrong', shouldProceed: false }) }
+        if (!isEmailExist) { return res.status(200).json({ error: 'Email or password is wrong', shouldProceed: false }) }
         const isPasswordCorrect = await bcrypt.compare(password, isEmailExist.password)
         if (!isPasswordCorrect) {
-            return res.status(200).json({ msg: 'Email or password is wrong', shouldProceed: false })
+            return res.status(200).json({ error: 'Email or password is wrong', shouldProceed: false })
         }
         if (isPasswordCorrect) {
             const loginSession = getLoginSession()
             const authToken = getAuthToken({ user: { id: isEmailExist._id } })
             const updateLoginSession = await UserDetail.updateOne({ _id: isEmailExist._id }, { loginSession })
-            return res.status(200).json({ authToken, loginSession, shouldProceed: true,email })
+            return res.status(200).json({ authToken, loginSession, 3: true,email,msg:"you have login successfully",shouldProceed:true })
         }
     }, res)
 });
-router.get("/shouldlogin", authorize, async (req, res) => { // this api insures that the user is logged in with only one device
+router.post("/shouldlogin", authorize, async (req, res) => { // this api insures that the user is logged in with only one device
     tryCatch(async () => {
         const { loginSession } = req.body;
         const isLogin = jwt.verify(loginSession, secret, async (error) => {
@@ -85,7 +85,7 @@ router.post("/logout", authorize, async (req, res) => {
     }, res)
 });
 
-router.post("/resetpassword", authorize, [
+router.post("/resetpassword", [
     body("newPassword", "Password must be at least 5 characters").isLength({ min: 5, })
 ], async (req, res) => { // this api reset the password
     tryCatch(async () => {
@@ -93,15 +93,14 @@ router.post("/resetpassword", authorize, [
         if (!Validation_errors.isEmpty()) {
             return res.status(200).json({ error: Validation_errors.errors[0].msg });
         }
-        const { shouldProceed,newPassword } = req.body;
+        const { shouldProceed,newPassword,email } = req.body;
         if(!shouldProceed){return res.status(200).json({ msg: 'Email or password is wrong' })}
         if(shouldProceed){ 
-            const { user } = req.user;
-            const userData = await UserDetail.findById(user.id).select(['password','-_id']);
-            const passCompare = await bcrypt.compare(userData.password, newPassword)
-            if(!passCompare){return res.status(200).json({msg:"this is your old password please try again" })}
+            const userData = await UserDetail.findOne({email}).select(['password','-_id']);
+            const passCompare = await bcrypt.compare(newPassword,userData.password)
+            if(passCompare){return res.status(200).json({error:"this is your old password please try again" })}
             const secPassword = await getHashData(newPassword);
-            const resetUserPassword = await UserDetail.updateOne({_id: user.id},{password: secPassword})
+            const resetUserPassword = await UserDetail.updateOne({email},{password: secPassword})
         }
         return res.status(200).json({msg:`your new password is ${newPassword}`})
     }, res)

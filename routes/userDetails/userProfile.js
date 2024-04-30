@@ -5,18 +5,28 @@ const UserDetails = require("../../models/UserDetail");
 const authorize = require("../../middleware/authorize");
 const { body, validationResult } = require("express-validator");
 const tryCatch = require("../../helpers/trycatch");
+const fireStorage = require('../../firebase/FirebaseStorage.js');
+const { ref, getDownloadURL, uploadBytesResumable } = require('firebase/storage');
+const multer = require('multer');
+const Userdetail = require("../../models/UserDetail");
+const upload = multer({
+	storage: multer.memoryStorage(),
+	redirect: false,
+	limits: { fileSize: 5 * 1024 * 1024 },
+});
 // get user details/data
 router.get("/getuserdetails", authorize, async (req, res) => {
-	tryCatch(async()=>{
-        const { user } = req.user;
+	tryCatch(async () => {
+		const { user } = req.user;
 		const userData = await UserDetails.findById(user.id).select([
 			"-password",
 			"-__v",
 			"-isLogin",
-			"-loginSession"
+			"-loginSession",
+			"-_id"
 		]);
 		res.status(200).json({ userData });
-    })
+	})
 });
 // update user details/data
 router.put(
@@ -30,8 +40,8 @@ router.put(
 	],
 	authorize,
 	async (req, res) => {
-		tryCatch(async()=>{
-            const Validation_errors = validationResult(req);
+		tryCatch(async () => {
+			const Validation_errors = validationResult(req);
 			if (!Validation_errors.isEmpty()) {
 				return res.status(200).json({ error: Validation_errors.errors[0].msg });
 			}
@@ -42,7 +52,7 @@ router.put(
 			if (email) updateFields.email = email;
 			if (Object.keys(updateFields).length > 0) {
 				const updated = await UserDetails.updateOne(
-					// udating the fields
+					// updating the fields
 					{ _id: user.user.id },
 					{ $set: updateFields },
 				);
@@ -54,8 +64,21 @@ router.put(
 			} else {
 				res.status(200).json({ msg: "No fields to update" });
 			}
-        });
+		});
 	},
 );
-
+router.post('/uploaduserprofile', authorize, upload.single('userProfile'), async (req, res) => { //**********//
+	tryCatch(async () => {
+		const user = await req.user;
+		const storageRef = ref(fireStorage, `userProfile/${user.user.id}`)
+		const userData = await Userdetail.findById(user.user.id).select(['userImage'])
+		const metadata = {
+			contentType: req.file.mimetype
+		}
+		const uploadFile = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
+		const profileUrl = await getDownloadURL(uploadFile.ref)
+		const saveUserProfileUrl = await Userdetail.updateOne({ _id: user.user.id }, { userImage: profileUrl })
+		res.status(200).json({ msg: "profile saved" })
+	})
+})
 module.exports = router;

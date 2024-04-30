@@ -19,12 +19,12 @@ router.post("/send", [
         if (!shouldProceed) { return res.status(200).json({ error: 'Email or password is incorrect', shouldProceed: false }); }
         if (type === 'login') {
             const isEmailExist = await UserDetail.findOne({ email })
-            if (!isEmailExist) { return res.status(200).json({ error: "There is no account with this email id ", shouldProceed: false }); }
+            if (!isEmailExist) { return res.status(200).json({ error: "There is no account with this email ", shouldProceed: false }); }
         }
         const otp = getAuthToken({ OtpDATA: otpGenerator(6, false, false, false) });
         const saveOtp = await OTP.create({ email, otp });
         if (!saveOtp) { return res.status(200).json({ error: "error while sending OTP", shouldProceed: false }); }
-        return res.status(200).json({ shouldProceed: true, email,msg:"otp is sended please check your email" });
+        return res.status(200).json({ shouldProceed: true,msg:"otp is sended please check your email" });
     }, res)
 });
 router.post("/confirm", [
@@ -32,7 +32,7 @@ router.post("/confirm", [
 ], async (req, res) => {
     tryCatch(async () => {
         const { email, shouldProceed, otp } = req.body;
-        if (!shouldProceed) { return res.status(200).json({ error: 'Email or password is incorrect', verifyConform: false }) };
+        if (!shouldProceed) { return res.status(200).json({ error: 'otp is expired or invalid', verifyConform: false }) };
         const Validation_errors = validationResult(req);
         if (!Validation_errors.isEmpty()) {
             return res.status(200).json({ error: Validation_errors.errors[0].msg, verifyConform: false });
