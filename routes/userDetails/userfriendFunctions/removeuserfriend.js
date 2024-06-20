@@ -9,8 +9,8 @@ function excludeFriendId(existingFriends, friendId) {
     return existingFriends.filter(friend => friend !== friendId);
 }
 
-async function removeFriendFunction(friendEmail, userEmail) {
-    const findUserEmail = await UserDetail.findOne({ email: userEmail }).select(["_id"]);
+async function removeFriendFunction(friendEmail, userId) {
+    const findUserEmail = await UserDetail.findOne({ _id: userId }).select(["_id"]);
     const findfriendEmail = await UserDetail.findOne({ email: friendEmail });
 
     if (!findUserEmail) {
@@ -20,14 +20,13 @@ async function removeFriendFunction(friendEmail, userEmail) {
     if (!findfriendEmail) {
         return `There is no account with this email: ${friendEmail}`;
     }
-    const userId = findUserEmail._id;
     const friendId = await getIdByEmail(friendEmail);
     const findUserInUserFriend = await UserFriend.findOne({ userId: userId });
     if (findUserInUserFriend) {
         const existingFriends = findUserInUserFriend.friend;
-        if(existingFriends.length === 0){return "you have no friends yet";}
+        if(!existingFriends.length){return "you have no friends yet";}
         const newFriendList = excludeFriendId(existingFriends, friendId);
-        const saveNewFriendList = await UserFriend.updateOne({ userId: userId }, { $set: { friend: [...newFriendList] } });
+        const saveNewUserTable = await UserFriend.updateOne({ userId: userId }, { $set: { friend: [...newFriendList] } });
         return `${friendEmail} removed from your friend list`;
     }
     return "you have no friends yet";

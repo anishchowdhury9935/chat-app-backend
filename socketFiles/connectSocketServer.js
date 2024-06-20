@@ -1,4 +1,4 @@
-const chatData = require("../routes/chat/chatData");
+const socketEvents = require("../socketFiles/socketEvents");
 const { Server } = require('socket.io');
 const ServerIo =  (server) => {
 	const io = new Server(server,{
@@ -8,6 +8,6 @@ const ServerIo =  (server) => {
 }
 const connectSocketServer = async (server) => {
 	const io = await ServerIo(server); // socket.io server function
-	return chatData.allRoutes(io);
+	return socketEvents(io);
 };
 module.exports = connectSocketServer;

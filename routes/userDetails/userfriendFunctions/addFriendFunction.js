@@ -6,8 +6,8 @@ const getIdByEmail = async (email) => { //geting Id of friend email
 	return getId._id.toString();
 };
 
-async function addFriendFunction(friendEmail, userEmail) {
-	const findUserEmail = await UserDetail.findOne({ email: userEmail }).select(["_id"]);
+async function addFriendFunction(friendEmail, user_id) {
+	const findUserEmail = await UserDetail.findOne({ _id: user_id }).select(["_id"]);
 	const findfriendEmail = await UserDetail.findOne({ email: friendEmail });
 
 	if (!findUserEmail) {
@@ -22,21 +22,33 @@ async function addFriendFunction(friendEmail, userEmail) {
 	const friendId = await getIdByEmail(friendEmail);
 
 	const findUserInUserFriend = await UserFriend.findOne({ userId: userId });
+	const findFriendInUserFriend = await UserFriend.findOne({ userId: friendId });
 	if (findUserInUserFriend) {
 		// Check for existing friends if the user already has a record
 		const existingFriends = findUserInUserFriend.friend;
 		if (existingFriends.includes(friendId)) {
-			return `${friendEmail} is already your friend`;
+			return `${findfriendEmail.name} is already your friend`;
 		}
 		await UserFriend.updateOne({ userId: userId }, { $set: { friend: [...findUserInUserFriend.friend, friendId] } });
+		if (findFriendInUserFriend) {
+			await UserFriend.updateOne({ userId: friendId }, { $set: { friend: [...findFriendInUserFriend.friend, userId] } });
+		}else{
+			const addFriendTable = await UserFriend.create({
+				userId: friendId,
+				friend: [userId]
+			});
+		}
 	} else {
-		const newUserFriend = await UserFriend.create({
+		const addUserTable = await UserFriend.create({
 			userId: userId,
 			friend: [friendId]
 		});
+		const addFriendTable = await UserFriend.create({
+			userId: friendId,
+			friend: [userId]
+		});
 	}
-
-	return `${friendEmail}is added to your friend list`;
+	return `${findfriendEmail.name} is added to your friend list`;
 }
 
 exports.addFriendFunction = addFriendFunction;

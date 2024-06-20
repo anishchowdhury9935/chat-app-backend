@@ -6,7 +6,7 @@ async function authorize(req, res, next) {
 	const token = await req.header("auth-token"); // auth token coming from headers
 	try {
 		const data = jwt.verify(token, secret);
-		const userVerify = await UserDetails.findOne({ _id: data.user.id });
+		const userVerify = await UserDetails.findOne({ _id: data.user.id }).select(['-_id'])
 		if (!userVerify) {
 			return res.status(401).json({ error: "User not found⚠️" });
 		}

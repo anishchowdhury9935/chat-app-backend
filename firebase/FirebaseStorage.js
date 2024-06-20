@@ -1,13 +1,14 @@
 
 const { initializeApp } = require("firebase/app");
 const {getStorage} = require('firebase/storage');
+require("dotenv").config();
 const firebaseConfig = {
-    apiKey: "AIzaSyAnHNsyqfz2tQPUNNBxK87hGS6AYuxVJDc",
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: "chat-app-b2168.firebaseapp.com",
     projectId: "chat-app-b2168",
-    storageBucket: "chat-app-b2168.appspot.com",
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: "596628665071",
-    appId: "1:596628665071:web:2b9f910f984858fe2ce11a"
+    appId: process.env.REACT_APP_FIREBASE_API_ID
 };
 
 // Initialize Firebase

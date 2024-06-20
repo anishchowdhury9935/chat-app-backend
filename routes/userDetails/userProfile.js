@@ -22,15 +22,13 @@ router.get("/getuserdetails", authorize, async (req, res) => {
 			"-password",
 			"-__v",
 			"-isLogin",
-			"-loginSession",
-			"-_id"
+			"-loginSession"
 		]);
 		res.status(200).json({ userData });
 	})
 });
 // update user details/data
-router.put(
-	"/setuserdetails",
+router.put("/setuserdetails",
 	[
 		body("email", "Enter a valid email").isEmail(),
 		body("name", "Name must be minimum 5 and maximum 20").isLength({
@@ -69,11 +67,15 @@ router.put(
 );
 router.post('/uploaduserprofile', authorize, upload.single('userProfile'), async (req, res) => { //**********//
 	tryCatch(async () => {
+		if (req.file?.mimetype.slice(0, 5) !== 'image') {
+			res.status(200).json({ error: "profile should only be an image type" })
+		}
 		const user = await req.user;
 		const storageRef = ref(fireStorage, `userProfile/${user.user.id}`)
-		const userData = await Userdetail.findById(user.user.id).select(['userImage'])
+		// const userData = await Userdetail.findById(user.user.id).select(['userImage'])
 		const metadata = {
-			contentType: req.file.mimetype
+			contentType: req.file.mimetype,
+			cacheControl: 'public,max-age=36000'
 		}
 		const uploadFile = await uploadBytesResumable(storageRef, req.file.buffer, metadata);
 		const profileUrl = await getDownloadURL(uploadFile.ref)
@@ -81,4 +83,17 @@ router.post('/uploaduserprofile', authorize, upload.single('userProfile'), async
 		res.status(200).json({ msg: "profile saved" })
 	})
 })
+router.post("/userstatus", authorize, async (req, res) => {
+	tryCatch(async () => {
+		const { user } = req.user;
+		const { status } = req.body;
+		tryCatch(async () => {
+			const updateStatus = await UserDetails.updateOne({ _id: user.id }, { $set: { OnlineStatus: status } })
+			if (!updateStatus) {
+				return res.status(500);
+			}
+			return res.status(200);
+		}, res)
+	}, res)
+});
 module.exports = router;

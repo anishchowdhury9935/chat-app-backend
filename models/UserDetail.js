@@ -24,6 +24,11 @@ const userSchema = new mongoose.Schema({
     loginSession: {
         type: String,
         required: true,
+    },
+    OnlineStatus: {
+        type: Boolean,
+        required: false,
+        default: false,
     }
 });
 

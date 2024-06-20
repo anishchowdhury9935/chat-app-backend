@@ -30,7 +30,7 @@ router.post("/create_user", [
         const loginSession = getLoginSession()
         const signInUser = await UserDetail.create({ name, email, password: secPassword, loginSession }).then(async () => {
             const userId = await UserDetail.findOne({ email }).select(["_id"])
-            const authToken = getAuthToken({ user: { id: userId } })
+            const authToken = getAuthToken({ user: { id: userId._id } })
             return res.status(200).json({ authToken, loginSession,msg:"your account has been created ✅" });
         })
     }, res)
@@ -81,7 +81,7 @@ router.post("/logout", authorize, async (req, res) => {
     tryCatch(async () => {
         const { user } = req.user;
         const userData = await UserDetail.updateOne({ _id: user.id }, { loginSession: '' })
-        return res.status(200).json({ msg: "User logged out" });
+        return res.status(200).json({ msg: "User logged out",shouldProceed:true });
     }, res)
 });
 
